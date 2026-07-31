@@ -1,0 +1,25 @@
+{
+  "name": "in2weeks",
+  "version": "1.0.0",
+  "private": true,
+  "description": "以成果为中心的 14 天技能冲刺工作台",
+  "scripts": {
+    "start": "npm --prefix apps/web run start",
+    "dev": "npm --prefix apps/web run dev",
+    "build": "npm --prefix apps/web run build",
+    "lint": "npm --prefix apps/web run lint",
+    "typecheck": "npm --prefix apps/web run typecheck",
+    "check:env": "npm --prefix apps/web run check:env",
+    "test": "node --test test/server.test.js && npm --prefix apps/web run test",
+    "test:e2e": "npm --prefix apps/web run test:e2e",
+    "db:generate": "npm --prefix apps/web run db:generate",
+    "db:migrate": "npm --prefix apps/web run db:migrate",
+    "content:import": "npm --prefix apps/web run content:import",
+    "smoke:sprint": "npm --prefix apps/web run smoke:sprint",
+    "legacy:start": "node server.js",
+    "legacy:dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

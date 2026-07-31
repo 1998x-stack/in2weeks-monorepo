@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="用 14 天，完成一个真实作品。In2Weeks 是成果驱动的技能冲刺工作台。">
+  <title>In2Weeks — 用作品学会一项技能</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="In2Weeks 首页">
+      <span class="brand-mark">14</span><span>In2Weeks</span>
+    </a>
+    <nav>
+      <a data-nav="home" href="#home">今日</a>
+      <a data-nav="projects" href="#projects">项目库</a>
+      <a data-nav="method" href="#method">方法</a>
+    </nav>
+    <button class="button button-small" id="headerCta">开始冲刺 <span>↗</span></button>
+  </header>
+
+  <main id="app" aria-live="polite"></main>
+
+  <footer>
+    <div class="brand"><span class="brand-mark">14</span><span>In2Weeks</span></div>
+    <p>不要先学完。先做出第一个版本。</p>
+    <span>Based on outcome-first learning.</span>
+  </footer>
+
+  <dialog id="sprintDialog">
+    <form id="sprintForm">
+      <button type="button" class="dialog-close" aria-label="关闭">×</button>
+      <div class="eyebrow"><span></span> 成果合同</div>
+      <h2>第 14 天，你要<br>拿出什么？</h2>
+      <p class="muted">缩小目标，直到它可以展示、验证，并在每天 90 分钟内推进。</p>
+      <input type="hidden" name="projectId" id="projectId">
+      <label>我要完成
+        <input required name="title" id="sprintTitle" maxlength="120" placeholder="例如：一个支持 SET / GET 的迷你 Redis">
+      </label>
+      <div class="form-row">
+        <label>交给谁使用
+          <input required name="audience" maxlength="80" placeholder="同事 / 用户 / 自己">
+        </label>
+        <label>每日投入
+          <select name="dailyMinutes">
+            <option value="60">60 分钟</option>
+            <option value="90" selected>90 分钟</option>
+            <option value="120">120 分钟</option>
+          </select>
+        </label>
+      </div>
+      <fieldset>
+        <legend>怎样才算完成？</legend>
+        <input required name="criterion" placeholder="可观察的标准 01，例如：通过 10 个测试">
+        <input name="criterion" placeholder="可观察的标准 02">
+        <input name="criterion" placeholder="可观察的标准 03">
+      </fieldset>
+      <div class="dialog-project" id="dialogProject"></div>
+      <p class="form-error" id="formError"></p>
+      <button class="button button-wide" type="submit">签下合同，开始 14 天 <span>→</span></button>
+    </form>
+  </dialog>
+
+  <dialog id="checkinDialog">
+    <form id="checkinForm">
+      <button type="button" class="dialog-close" aria-label="关闭">×</button>
+      <div class="eyebrow"><span></span> 每日收工</div>
+      <h2 id="checkinTitle">留下今天的证据</h2>
+      <input type="hidden" name="day">
+      <label>实际制作时间（分钟）
+        <input type="number" name="minutes" min="0" max="600" value="60">
+      </label>
+      <label>今天完成了什么
+        <textarea name="artifact" rows="3" placeholder="一个文件、链接、截图，或可描述的结果"></textarea>
+      </label>
+      <label>最大的障碍
+        <textarea name="obstacle" rows="2" placeholder="只写最影响交付的一个问题"></textarea>
+      </label>
+      <label>闭卷回忆：今天真正学会了什么
+        <textarea name="recall" rows="3" placeholder="它解决什么问题？下次如何独立复现？"></textarea>
+      </label>
+      <button class="button button-wide" type="submit">保存并完成今天 <span>✓</span></button>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

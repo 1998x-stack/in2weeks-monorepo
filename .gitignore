@@ -1,0 +1,11 @@
+data/state.json
+data/state.json.tmp
+.DS_Store
+.env
+.env.local
+node_modules/
+.next/
+coverage/
+apps/web/playwright-report/
+apps/web/test-results/
+.codegraph/

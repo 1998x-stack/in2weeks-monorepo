@@ -1,91 +1,206 @@
 # In2Weeks
 
-In2Weeks 是一个以成果为中心的 14 天技能冲刺产品：选择真实作品，先做、补缺、反馈、重建，并在第 14 天正式交付。
+<p align="center">
+  <strong>Outcome-focused 14-day skill sprints.</strong><br>
+  Pick a real project. Start building. Learn what you're missing.<br>
+  Get feedback. Rebuild. Deliver on day 14.
+</p>
 
-## 当前结构
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#tech-stack">Tech Stack</a> •
+  <a href="#project-structure">Structure</a> •
+  <a href="#commands">Commands</a> •
+  <a href="#design-philosophy">Philosophy</a>
+</p>
 
-```text
-apps/web/            Next.js + TypeScript 生产版
-build-your-own-x/    本地项目内容来源
-docs/                产品与技术设计
-public/ + server.js  无依赖交互原型（保留为基线）
-```
+---
 
-## 生产版快速开始
+**In2Weeks** turns Dan Koe's *You Can Learn Anything in Two Weeks* method into a structured product. It's not a course platform, not a todo app, not a habit tracker — it's a **delivery operating system** for real projects.
 
-要求：
+Instead of "finish the course first, then apply," In2Weeks flips the sequence:
+
+> **Decide on a concrete outcome → Start building → Expose knowledge gaps → Learn what's directly needed → Apply → Get feedback → Iterate → Deliver.**
+
+---
+
+## Features
+
+- **Outcome Contract** — Define your project, audience, and observable success criteria before writing a single line
+- **14-Day Roadmap** — L1 (imitate) through L5 (independent delivery), with structured daily checkpoints
+- **Daily Check-in** — Record hours worked, output produced, biggest obstacle, and recall notes each day
+- **Artifact Log** — Accumulate learning evidence every day; unlocks the next day only after check-in
+- **Project Catalog** — Dynamic project library sourced from curated build tutorials, with language/filter/search
+- **Plan Intelligence** — Diagnoses fuzzy goals, over-scoped targets, and unobservable criteria before sprint starts
+- **One Active Sprint** — Single-sprint focus enforced; pause, resume, or abandon as needed
+- **Day 14 Auto-Complete** — Sprint automatically ends on completion; history preserved for review
+
+---
+
+## Quick Start
+
+### Prerequisites
 
 - Node.js 20+
-- PostgreSQL 17+
-- Docker Compose（推荐）
+- PostgreSQL 17+ (or Docker Compose)
+
+### Setup
 
 ```bash
+# Clone the repo
+git clone https://github.com/1998x-stack/in2weeks-monorepo.git
+cd in2weeks-monorepo
+
+# Configure environment
 cp apps/web/.env.example apps/web/.env.local
+
+# Start infrastructure
 docker compose up -d postgres mailpit
+
+# Install dependencies
 npm --prefix apps/web install --legacy-peer-deps
+
+# Set up database
 npm run db:migrate
+
+# Import project catalog
 npm run content:import
+
+# Start dev server
 npm run dev
 ```
 
-访问：
+The app will be at **`http://localhost:3000`** — browse projects, start a sprint, and deliver by day 14.
 
-- 网站：`http://localhost:3000`
-- Mailpit：`http://localhost:8025`
+Mailpit runs at **`http://localhost:8025`** for email-based auth during local development.
 
-如暂时没有 PostgreSQL，网站仍可启动并展示精选项目；登录、完整项目库和用户数据需要数据库。
+> **No database?** The app degrades gracefully: featured projects are visible, but login, full catalog, sprints, and user data require PostgreSQL.
 
-GitHub 登录需要创建 OAuth App，并将 Client ID/Secret 写入 `apps/web/.env.local`。邮箱登录在本地通过 Mailpit 接收。
+### Authentication
 
-## 常用命令
+- **Email magic link** — works out of the box locally via Mailpit
+- **GitHub OAuth** — requires creating a GitHub OAuth app and adding `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` to `.env.local`
 
-```bash
-npm run dev             # 生产版开发服务器
-npm run build           # 生产构建
-npm run lint            # ESLint
-npm run test            # 原型 + 生产版测试
-npm run test:e2e        # Playwright 真实浏览器核心流程
-npm run db:generate     # 根据 schema 生成 SQL 迁移
-npm run db:migrate      # 执行迁移
-npm run content:import  # 幂等同步本地项目库
-npm run smoke:sprint    # 数据库端到端验证合同和每日推进
-npm run check:env       # 上线前检查认证和数据库配置
-npm run legacy:start    # 启动原始无依赖原型
+---
+
+## Architecture
+
+In2Weeks is a **modular monolith**: a single Next.js app backed by PostgreSQL.
+
+```
+┌─────────────────────────────────────────────┐
+│                Next.js App                   │
+│  App Router │ React Server Components        │
+├─────────────────────────────────────────────┤
+│  API Layer                                   │
+│  ┌─────────┐ ┌──────────┐ ┌──────────────┐  │
+│  │  Auth    │ │  Sprint  │ │  Catalog     │  │
+│  │(NextAuth)│ │ Endpoints│ │  Endpoints   │  │
+│  └─────────┘ └──────────┘ └──────────────┘  │
+├─────────────────────────────────────────────┤
+│  Business Logic (Modules)                    │
+│  ┌────────┐ ┌────────┐ ┌────────┐ ┌──────┐ │
+│  │ Sprints│ │ Checkin│ │Contract│ │Plan  │ │
+│  └────────┘ └────────┘ └────────┘ └──────┘ │
+│  ┌─────────┐ ┌──────────┐ ┌──────────────┐ │
+│  │ Catalog  │ │ Feature  │ │ Repository   │ │
+│  └─────────┘ └──────────┘ └──────────────┘ │
+├─────────────────────────────────────────────┤
+│  Database (Drizzle ORM + PostgreSQL)         │
+└─────────────────────────────────────────────┘
 ```
 
-运行服务后，`GET /api/health` 会检查应用及数据库状态，可供容器编排和监控系统探测。
+### Design Principles
 
-## Phase 1 已实现
+- **Parse, don't validate** — data shapes enforced at the boundary, not checked everywhere
+- **Isolated modules** — each domain has its own folder with clear import boundaries
+- **Rate-limited** — all stateful operations pass through a PostgreSQL-backed rate limiter
+- **Graceful degradation** — read features work without a database; writes require it
 
-- Next.js App Router、TypeScript、响应式 UI；
-- PostgreSQL + Drizzle Schema 和 SQL 迁移；
-- 稳定版 NextAuth、GitHub OAuth 和邮箱魔法链接；
-- 服务端会话与受保护的今日页面；
-- `build-your-own-x` 解析、去重、幂等导入；
-- 数据库搜索与无数据库精选降级；
-- 项目详情和创建成果合同入口；
-- Docker、CI、Lint、Vitest 和生产构建。
+---
 
-## Phase 2 已实现
+## Tech Stack
 
-- 成果合同表单与服务端 Zod 校验；
-- 模糊目标、过大范围和不可观察标准诊断；
-- Sprint、验收标准、14 天计划和文本证据模型；
-- 从 L1 模仿到 L5 独立交付的计划生成；
-- 用户同一时间只能有一个进行中冲刺；
-- 今日工作台、合同、统计和 14 天路线；
-- 每日制作时间、完成物、障碍、主动回忆和明日动作；
-- 完成当天后写入 Artifact、解锁下一天；
-- 第 14 天完成后自动结束冲刺；
-- 暂停、恢复、放弃、历史冲刺和 Artifact 证据历史；
-- PostgreSQL 共享限流覆盖邮箱登录、创建、打卡和状态操作；
-- CSP 与基础浏览器安全响应头；
-- 数据库 Smoke Test 覆盖并发提交、业务约束和共享限流；
-- Playwright 覆盖合同创建、打卡、暂停恢复、第 14 天完成态和移动端布局；
-- CI 自动启动 PostgreSQL，执行迁移、内容导入、数据库测试、构建及浏览器 E2E。
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | Next.js 15 (App Router) |
+| **Language** | TypeScript |
+| **Database** | PostgreSQL 17 |
+| **ORM** | Drizzle ORM with SQL migrations |
+| **Auth** | NextAuth v5 (GitHub OAuth + Email Magic Link) |
+| **Testing** | Vitest (unit), Playwright (E2E) |
+| **Linting** | ESLint + TypeScript strict mode |
+| **Styling** | PostCSS + custom CSS, responsive |
+| **Infrastructure** | Docker Compose (dev), GitHub Actions (CI) |
 
-## 设计资料
+---
 
-- [当前原型设计](./DESIGN.md)
-- [V2 生产化产品与技术方案](./docs/IN2WEEKS_V2_DESIGN.md)
-- [全面审查与修复记录](./docs/REVIEW_2026-07-31.md)
+## Project Structure
+
+```
+apps/web/                  Next.js application
+├── src/
+│   ├── app/               App Router pages & API routes
+│   │   ├── api/           API endpoints
+│   │   ├── sprints/       Sprint workspace
+│   │   ├── today/         Daily check-in
+│   │   ├── explore/       Project catalog
+│   │   ├── method/        Methodology
+│   │   └── sign-in/       Authentication
+│   ├── components/        Shared React components
+│   ├── db/                Drizzle schema + client
+│   ├── lib/               Auth, rate-limit, session
+│   └── modules/           Domain modules (sprints, catalog)
+├── drizzle/               SQL migrations
+├── e2e/                   Playwright tests
+├── scripts/               Dev scripts
+├── build-your-own-x/      Curated project content
+├── docs/                  Design docs
+├── public/                Legacy prototype
+└── server.js              Legacy API server
+```
+
+---
+
+## Commands
+
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | TypeScript strict check |
+| `npm run test` | Unit + integration tests |
+| `npm run test:e2e` | Playwright E2E |
+| `npm run db:generate` | Create SQL migration from schema |
+| `npm run db:migrate` | Apply pending migrations |
+| `npm run content:import` | Idempotent project catalog import |
+| `npm run smoke:sprint` | Database e2e smoke test |
+| `npm run check:env` | Pre-deploy auth & DB check |
+| `npm run legacy:start` | Start original prototype |
+
+---
+
+## Design
+
+- **[Product & Technical Design](./DESIGN.md)** — Current prototype design
+- **[V2 Product Proposal](./docs/IN2WEEKS_V2_DESIGN.md)** — Full multi-user production plan
+- **[Review & Fix Log](./docs/REVIEW_2026-07-31.md)** — Audit trail
+
+### Visual Direction
+
+Workbook + creator tool aesthetic: warm paper backgrounds, deep ink text, fluorescent accents, monospace figures — deliberately avoiding edtech's blue-purple gradients and gamification.
+
+---
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
+
+---
+
+<p align="center">
+  <sub>Built for people who ship, not just learn.</sub>
+</p>

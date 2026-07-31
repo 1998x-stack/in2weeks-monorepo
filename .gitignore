@@ -10,3 +10,4 @@ apps/web/playwright-report/
 apps/web/test-results/
 .codegraph
 .codegraph/
+.omo/

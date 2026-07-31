@@ -4,13 +4,13 @@ import { notFound } from "next/navigation";
 
 import { getProjectBySlug } from "@/modules/catalog/repository";
 
-export async function generateMetadata({ params }: PageProps<"/projects/[slug]">): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
   return { title: project?.title ?? "项目不存在" };
 }
 
-export default async function ProjectPage({ params }: PageProps<"/projects/[slug]">) {
+export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
   if (!project) notFound();

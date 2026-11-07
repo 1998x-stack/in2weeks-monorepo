@@ -10,5 +10,5 @@
 - Security & regression review: Only the parser and its unit test are changed; no credentials, user data, auth, database schema, workflow, deployment or permission files are touched. No new dependencies. Parser output shape, source keys and existing slugs remain compatible. Re-import is expected to update category/searchText for existing source rows through the existing idempotent importer; it must be verified only against the CI disposable PostgreSQL database.
 - Risk & rollback: Low application-code risk; malformed or newly introduced heading conventions could reset the category unexpectedly. Revert this commit or close the PR; no schema migration or production write was performed.
 - Follow-up: Verify the CI content import against an ephemeral PostgreSQL database and assert 62 source rows have category `Uncategorized` while existing slugs remain unchanged.
-- Commit: pending
-- PR: pending
+- Commit: e6e3e68873bd7b623a7f691e043ef576e6935574 (implementation head at PR creation)
+- PR: https://github.com/1998x-stack/in2weeks-monorepo/pull/1

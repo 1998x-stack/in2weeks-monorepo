@@ -16,7 +16,7 @@ export function slugify(value: string) {
   return value
     .toLowerCase()
     .normalize("NFKD")
-    .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, "-")
+    .replace(/[^a-z0-9\\u4e00-\\u9fa5]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 120);
 }
@@ -25,15 +25,18 @@ export function parseBuildYourOwnX(markdown: string): ParsedProjectSource[] {
   const projects: ParsedProjectSource[] = [];
   let category = "";
 
-  for (const line of markdown.split(/\r?\n/)) {
-    const heading = line.match(/^#### Build your own `(.+)`/);
+  for (const line of markdown.split(/\\r?\\n/)) {
+    const heading = line.match(/^#{1,6}\\s+(.+?)\\s*$/);
     if (heading) {
-      category = heading[1].trim();
+      const headingText = heading[1].trim();
+      const buildCategory = headingText.match(/^Build your own `(.+)`$/);
+      category = buildCategory?.[1].trim()
+        ?? (headingText === "Uncategorized" ? "Uncategorized" : "");
       continue;
     }
     if (!category) continue;
 
-    const item = line.match(/^\*\s+\[\*\*(.+?)\*\*:\s+(.+?)\]\((https?:\/\/[^)]+)\)(.*)$/);
+    const item = line.match(/^\\*\\s+\\[\\*\\*(.+?)\\*\\*:\\s+(.+?)\\]\\((https?:\\/\\/[^)]+)\\)(.*)$/);
     if (!item) continue;
 
     const language = item[1].trim();

@@ -20,4 +20,21 @@ describe("build-your-own-x parser", () => {
     const markdown = "#### Build your own `Shell`\n* [**C**: _A Shell_](https://example.com/shell)";
     expect(parseBuildYourOwnX(markdown)[0].sourceKey).toHaveLength(64);
   });
+
+  it("keeps Uncategorized entries separate and resets at other section headings", () => {
+    const markdown = [
+      "#### Build your own `Web Server`",
+      "* [**Node.js**: _Build a Web Server_](https://example.com/server)",
+      "#### Uncategorized",
+      "* [**Python**: _Build a Hash Table_](https://example.com/hash-table)",
+      "## Contribute",
+      "* [**Go**: _This must not be imported_](https://example.com/contribute)",
+    ].join("\n");
+
+    const result = parseBuildYourOwnX(markdown);
+    expect(result.map(({ title, category }) => ({ title, category }))).toEqual([
+      { title: "Build a Web Server", category: "Web Server" },
+      { title: "Build a Hash Table", category: "Uncategorized" },
+    ]);
+  });
 });

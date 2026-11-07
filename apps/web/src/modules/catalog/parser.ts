@@ -26,9 +26,12 @@ export function parseBuildYourOwnX(markdown: string): ParsedProjectSource[] {
   let category = "";
 
   for (const line of markdown.split(/\r?\n/)) {
-    const heading = line.match(/^#### Build your own `(.+)`/);
+    const heading = line.match(/^#{1,6}\s+(.+?)\s*$/);
     if (heading) {
-      category = heading[1].trim();
+      const headingText = heading[1].trim();
+      const buildCategory = headingText.match(/^Build your own `(.+)`$/);
+      category = buildCategory?.[1].trim()
+        ?? (headingText === "Uncategorized" ? "Uncategorized" : "");
       continue;
     }
     if (!category) continue;
